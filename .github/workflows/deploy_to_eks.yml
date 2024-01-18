@@ -27,6 +27,7 @@ jobs:
         IMAGE_TAG: ${{ github.head_ref }}
       run: |
         # Builds a docker image and pushes it to Dockerhub
+        echo ${{ env.DOCKERHUB_TOKEN }} | docker login https://index.docker.io/v1/ -u ${{ env.DOCKERHUB_USER }} --password-stdin
         docker build -t $REPO_NAME:$IMAGE_TAG -f ./httpbin/Dockerfile ./httpbin
         docker push $REPO_NAME:$IMAGE_TAG
         echo "::set-output name=image::$REPO_NAME:$IMAGE_TAG"      
