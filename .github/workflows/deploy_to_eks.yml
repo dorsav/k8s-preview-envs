@@ -25,13 +25,17 @@ jobs:
       with:
         repository: postmanlabs/httpbin
         path: httpbin
-    
-    - name: Build and push to dockergub
-      uses: docker/build-push-action@v5
-      with:
-        push: true
-        file: /home/runner/work/k8s-preview-envs/k8s-preview-envs/httpbin/Dockerfile
-        tags: ${{ steps.split.outputs.branch_name }} 
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        REPO_NAME: "dorsav/myapp"
+        IMAGE_TAG: ${{ steps.split.outputs.branch_name }} 
+      run: |
+        # Builds a docker image and pushes it to Dockerhub
+        docker build -t $ECR_REPOSITORY:$IMAGE_TAG -f ./httpbin/Dockerfile ./httpbin
+        docker push $REPO_NAME:$IMAGE_TAG
+        echo "::set-output name=image::$REPO_NAME:$IMAGE_TAG"      
 
 #    - name: Configure AWS credentials
 #      uses: aws-actions/configure-aws-credentials@v1
