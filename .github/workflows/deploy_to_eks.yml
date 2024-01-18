@@ -24,6 +24,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         repository: postmanlabs/httpbin
+        path: httpbin
     
     - name: Build and push to dockergub
       uses: docker/build-push-action@v5
