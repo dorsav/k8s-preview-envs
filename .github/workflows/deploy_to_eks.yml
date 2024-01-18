@@ -15,12 +15,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Split branch name
-      env:
-        BRANCH: ${{ github.ref_name }}
-      id: split
-      run: echo "::set-output name=branch_name::${BRANCH##*/}"
-    
     - uses: actions/checkout@v4
       with:
         repository: postmanlabs/httpbin
@@ -30,10 +24,10 @@ jobs:
       id: build-image
       env:
         REPO_NAME: "dorsav/myapp"
-        IMAGE_TAG: ${{ steps.split.outputs.branch_name }} 
+        IMAGE_TAG: ${{ github.head_ref }}
       run: |
         # Builds a docker image and pushes it to Dockerhub
-        docker build -t $ECR_REPOSITORY:$IMAGE_TAG -f ./httpbin/Dockerfile ./httpbin
+        docker build -t $REPO_NAME:$IMAGE_TAG -f ./httpbin/Dockerfile ./httpbin
         docker push $REPO_NAME:$IMAGE_TAG
         echo "::set-output name=image::$REPO_NAME:$IMAGE_TAG"      
 
