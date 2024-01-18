@@ -24,10 +24,7 @@ jobs:
       with:
         repository: postmanlabs/httpbin
     
-    - name: build and push to dockerhub
-      uses: 
-
-    - name: Build and push
+    - name: Build and push to dockergub
       uses: docker/build-push-action@v5
       with:
         push: true
