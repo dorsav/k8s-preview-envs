@@ -1,8 +1,3 @@
-# This workflow will build and push a new image to dockerhub
-# Then, it will create a new chart with configuration overrides for a remote argo-cd Helm chart
-# Gather the remote chart and install it with helm on an EKS cluster that was created in advance, with the newly built docker image of course. a
-
-
 name: Deploy httpbhib app to Amazon EKS with Helm and Kustomize
 
 on:
@@ -16,10 +11,16 @@ env:
 
 jobs:
   deploy:
-    name: Deploy Argo
+    name: Deploy httpbin
     runs-on: ubuntu-latest
 
     steps:
+    - name: Split branch name
+      env:
+        BRANCH: ${{ github.ref_name }}
+      id: split
+      run: echo "::set-output name=branch_name::${BRANCH##*/}"
+    
     - uses: actions/checkout@v4
       with:
         repository: postmanlabs/httpbin
@@ -28,7 +29,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         push: true
-        tags: user/app:${{ github.ref }} 
+        tags: user/app:${{ steps.split.outputs.fragment }} 
 
 #    - name: Configure AWS credentials
 #      uses: aws-actions/configure-aws-credentials@v1
