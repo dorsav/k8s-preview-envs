@@ -66,7 +66,7 @@ jobs:
     - name: Deploy to designated preview namespace
       working-directory: k8s-preview-envs/helm/myapp
       run: |
-        kubectl create namespace ${{ github.head_ref }} 
-        kubectl apply -k . -n ${{ github.head_ref }}  --logtostderr --v=6
+        kubectl create namespace ${{ github.head_ref }} || true 
+        kubectl apply -k . -n ${{ github.head_ref }}
         
 
