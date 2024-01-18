@@ -19,10 +19,7 @@ jobs:
       env:
         BRANCH: ${{ github.ref_name }}
       id: split
-      run: |
-        ls -la
-        echo "::set-output name=branch_name::${BRANCH##*/}"
-        ls -la
+      run: echo "::set-output name=branch_name::${BRANCH##*/}"
     
     - uses: actions/checkout@v4
       with:
@@ -33,7 +30,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         push: true
-        file: ./k8s-preview-envs/httpbin/Dockerfile
+        file: /home/runner/work/k8s-preview-envs/k8s-preview-envs/httpbin/Dockerfile
         tags: ${{ steps.split.outputs.branch_name }} 
 
 #    - name: Configure AWS credentials
