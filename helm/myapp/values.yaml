@@ -1,10 +1,10 @@
 replicaCount: 1
 image:
-  repository: nginx 
+  repository: dorsav/myapp 
   tag: latest
   pullPolicy: IfNotPresent
 myapp:
   fullname: myapp-1
 service:
   type: ClusterIP
-  port: 80
+  port: 5000
