@@ -28,7 +28,7 @@ jobs:
         IMAGE_TAG: ${{ github.head_ref }}
       run: |
         # Builds a docker image and pushes it to Dockerhub
-        docker build -t $REPO_NAME:$IMAGE_TAG -f ./k8s-preview-envs/Dockerfile ./k8s-preview-envs
+        docker build -t $REPO_NAME:$IMAGE_TAG -f ./k8s-preview-envs/app/Dockerfile ./k8s-preview-envs/app
         docker push $REPO_NAME:$IMAGE_TAG
         echo "::set-output name=image::$REPO_NAME:$IMAGE_TAG" 
 
