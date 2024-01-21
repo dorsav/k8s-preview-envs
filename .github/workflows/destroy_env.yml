@@ -1,4 +1,4 @@
-name: Deploy preview env upon PR closure
+name: Destroy preview env upon PR closure
 on:
   pull_request:
     types: [ closed ]
