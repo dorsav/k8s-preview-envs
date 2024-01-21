@@ -1,48 +1,60 @@
-# This workflow will build and push a new image to dockerhub
-# Then, it will create a new chart with configuration overrides for a remote argo-cd Helm chart
-# Gather the remote chart and install it with helm on an EKS cluster that was created in advance, with the newly built docker image of course. a
-
-
-name: Deploy httpbhib app to Amazon EKS with Helm and Kustomize
+name: Deploy Get Schwifty app to GKE with Helm and Kustomize
 
 on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  AWS_REGION: eu-west-1                 
-  ECR_REPOSITORY: public.ecr.aws/#####
-  CLUSTER_NAME: aweomse-stuff
-
 jobs:
   deploy:
-    name: Deploy Argo
+    name: Deploy Get Schwifty App
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
+      name: Checkout current repository
       with:
-        repository: postmanlabs/httpbin
+        path: k8s-preview-envs   
     
-    - name: build and push to dockerhub
-      uses: 
-
-    - name: Build and push
-      uses: docker/build-push-action@v5
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
       with:
-        push: true
-        tags: user/app:${{ github.ref }} 
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-#    - name: Configure AWS credentials
-#      uses: aws-actions/configure-aws-credentials@v1
-#      with:
-#        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#        aws-region: ${{ env.AWS_REGION }}
+    - name: Build, tag, and push image to Dockerhub
+      id: build-image
+      env:
+        REPO_NAME: "dorsav/myapp"
+        IMAGE_TAG: ${{ github.head_ref }}
+      run: |
+        # Builds a docker image and pushes it to Dockerhub
+        docker build -t $REPO_NAME:$IMAGE_TAG -f ./k8s-preview-envs/app/Dockerfile ./k8s-preview-envs/app
+        docker push $REPO_NAME:$IMAGE_TAG
+        echo "::set-output name=image::$REPO_NAME:$IMAGE_TAG" 
 
-#    - name: Login to Amazon ECR
-#      id: login-ecr
-#      uses: aws-actions/amazon-ecr-login@v1
-#      with:
-#          registry-type: public
+    - id: 'auth'
+      name: Login to GCP
+      uses: 'google-github-actions/auth@v2'
+      with:
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
+    - name: Set up GKE credentials
+      uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: ${{ secrets.GKE_CLUSTER }}
+        location: ${{ secrets.GKE_ZONE }}
+
+    # Set up kustomize
+    - name: Set up Kustomize
+      run: |-
+        curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
+        chmod u+x ./kustomize
+
+    - name: Deploy to designated preview namespace
+      working-directory: k8s-preview-envs/kustomize/overlays
+      run: |
+        kubectl create namespace ${{ github.head_ref }} || true 
+        mkdir ${{ github.head_ref }} && cd ${{ github.head_ref }}
+        kustomize create --resources ../../../helm/myapp/
+        kustomize edit set image dorsav/myapp:${{ github.head_ref }}
+        kubectl apply -k . -n ${{ github.head_ref }}

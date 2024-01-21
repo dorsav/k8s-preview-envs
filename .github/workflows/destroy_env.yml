@@ -1,0 +1,27 @@
+name: Deploy preview env upon PR closure
+on:
+  pull_request:
+    types: [ closed ]
+jobs:
+  deploy:
+    name: Destroy myapp on current PR
+    runs-on: ubuntu-latest
+
+    steps:
+    - id: 'auth'
+      name: Login to GCP
+      uses: 'google-github-actions/auth@v2'
+      with:
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+    - name: Set up GKE credentials
+      uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: ${{ secrets.GKE_CLUSTER }}
+        location: ${{ secrets.GKE_ZONE }}
+
+    - name: Destroy current PR preview namespace
+      working-directory: k8s-preview-envs/helm/myapp
+      run: |
+        kubectl delete namespace ${{ github.head_ref }} 
+
