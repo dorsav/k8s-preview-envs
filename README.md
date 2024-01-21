@@ -5,9 +5,9 @@ Deployment and destruction of preview envs based on PR status
 
 This repository contains the configuration and deployment setup for managing preview environments of a sample FE app using Kubernetes, Helm, and Kustomize.
 
-- `app/`: Contains the files for the FE application (Mainly Dockerfile).
+- `app/`: Contains the files for the really dummy flask application
 - `helm/`: Helm chart for managing Kubernetes deployment.
-- `kustomize/`: Kustomize overlays for customizing Helm charts based on environments.
+- `kustomize/`: Kustomize overlays for customizing dynamic preview envs.
 
 ## Helm Chart - myapp
 
@@ -18,26 +18,22 @@ This repository contains the configuration and deployment setup for managing pre
 - `templates/`: Kubernetes manifests for Deployment and Service.
 
 
-### Customize Helm Values
-
-Update `helm/myapp/values.yaml` to customize deployment settings such as replica count, image repository, and service type.
-
 ## Kustomize Overlays
 
 Kustomize is used here to customize Helm values based on the PR name
 
-- `kustomize/overlays/preview/kustomization.yaml`: Kustomization file for the "preview" environment.
+- `kustomize/overlays/preview/kustomization.yaml`: Kustomization file for the "preview" environment. (preview dir here is an example of an adhoc environment, env name is branch name)
 
 ## Deployment Workflow
 
-1. Build and push the Docker image for the frontend app to your container registry.
+1. Build and push the Docker image of the frontend app to dorsav/myapp dockerhub registry.
 2. Install the Helm chart using Kustomize for the desired environment.
 
    ```bash
-   kubectl apply -k kustomize/overlays/preview
+   kubectl apply -k kustomize/overlays/preview 
 Access the deployed application in the specified namespace.
 Destroying Preview Environments
 To destroy a preview environment, delete the corresponding Kubernetes namespace.
 
    ```bash
-      helm uninstall my-frontend-app -n <PR-name>
+      kubectl delete -n <PR-name>

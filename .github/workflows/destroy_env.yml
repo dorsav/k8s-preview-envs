@@ -1,4 +1,4 @@
-name: Deploy preview env upon PR closure
+name: Destroy preview env upon PR closure
 on:
   pull_request:
     types: [ closed ]
@@ -21,7 +21,5 @@ jobs:
         location: ${{ secrets.GKE_ZONE }}
 
     - name: Destroy current PR preview namespace
-      working-directory: k8s-preview-envs/helm/myapp
       run: |
-        kubectl delete namespace ${{ github.head_ref }} 
-
+        kubectl delete namespace ${{ github.head_ref }}
